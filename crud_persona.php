@@ -2,6 +2,49 @@
 include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
+/******************************************************************************************FUNCION INSERTAR CONTACTO*************************************************************************************************/
+/******************************************************************************************FUNCION INSERTAR CONTACTO*************************************************************************************************/
+if ($post['accion'] == "insertarC") {
+    // Verificar que todos los datos necesarios están presentes en la solicitud
+    if (isset($post['nom_contacto']) && isset($post['ape_contacto']) && isset($post['telefono_contacto']) && isset($post['email_contacto']) && isset($post['persona_cod_persona'])) {
+
+        // Escapar datos para evitar inyección SQL
+        $nom_contacto = mysqli_real_escape_string($mysqli, $post['nom_contacto']);
+        $ape_contacto = mysqli_real_escape_string($mysqli, $post['ape_contacto']);
+        $telefono_contacto = mysqli_real_escape_string($mysqli, $post['telefono_contacto']);
+        $email_contacto = mysqli_real_escape_string($mysqli, $post['email_contacto']);
+        $persona_cod_persona = mysqli_real_escape_string($mysqli, $post['persona_cod_persona']);
+
+        // Sentencia SQL para insertar el contacto
+        $sentencia = sprintf(
+            "INSERT INTO contacto (nom_contacto, ape_contacto, telefono_contacto, email_contacto, persona_cod_persona) VALUES ('%s', '%s', '%s', '%s', '%s')",
+            $nom_contacto,
+            $ape_contacto,
+            $telefono_contacto,
+            $email_contacto,
+            $persona_cod_persona
+        );
+
+        $result = mysqli_query($mysqli, $sentencia);
+
+        // Verificar si la inserción fue exitosa
+        if ($result) {
+            $respuesta = json_encode(array('estado' => true, "mensaje" => "Contacto guardado correctamente"));
+        } else {
+            $respuesta = json_encode(array('estado' => false, "mensaje" => "Error: El numero ingresado ya hicistes en base"));
+        }
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Datos incompletos para guardar el contacto"));
+    }
+
+    echo $respuesta;
+}
+
+/*********************************************************************************************************************************************************************************************************************/
+
+/*********************************************************************************************************************************************************************************************************************/
+
+
 /******************************************************************************************FUNCION CONSULTAR CONTACTOS POR CODIGO DE PERSONA***************************************************************************/
 if ($post['accion'] == "consultarC") {
 
