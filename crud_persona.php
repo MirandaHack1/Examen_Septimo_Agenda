@@ -3,6 +3,70 @@ include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
 
+
+/******************************************************************************************FUNCION INICIAR SESION*************************************************************************************************/
+if ($post['accion'] == "iniciarSesion") {
+    $correo = mysqli_real_escape_string($mysqli, $post['correo']);
+    $clave = mysqli_real_escape_string($mysqli, $post['clave']);
+
+    $sentencia = sprintf("SELECT * FROM persona WHERE correo_persona='%s'", $correo);
+    $result = mysqli_query($mysqli, $sentencia);
+
+    if (mysqli_num_rows($result) > 0) {
+        $usuario = mysqli_fetch_array($result);
+
+        $intentos_fallidos = $usuario['intentos_fallidos'];
+        $ultima_fecha = $usuario['ultima_fecha'];
+        $fecha_actual = date("Y-m-d H:i:s"); // Fecha actual en formato MySQL
+
+        if ($intentos_fallidos >= 3 && (strtotime($fecha_actual) - strtotime($ultima_fecha)) < 3600) {
+            $respuesta = json_encode(array('estado' => false, "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."));
+        } else {
+            if ($usuario['clave_persona'] === $clave) {
+                $datos = array(
+                    'codigo' => $usuario['cod_persona'],
+                    'cedula' => $usuario['ci_persona'],
+                    'nombre' => $usuario['nom_persona'],
+                    'apellido' => $usuario['ape_persona'],
+                    'correo' => $usuario['correo_persona']
+                );
+                // Reiniciar intentos fallidos y última fecha
+                $sentencia_actualizar = sprintf(
+                    "UPDATE persona SET intentos_fallidos=0, ultima_fecha=NULL WHERE correo_persona='%s'",
+                    $correo
+                );
+                mysqli_query($mysqli, $sentencia_actualizar);
+
+                $respuesta = json_encode(array('estado' => true, "mensaje" => "Inicio de sesión exitoso", "usuario" => $datos));
+            } else {
+                $intentos_fallidos++;
+                $sentencia_actualizar = sprintf(
+                    "UPDATE persona SET intentos_fallidos=%d, ultima_fecha='%s' WHERE correo_persona='%s'",
+                    $intentos_fallidos,
+                    $fecha_actual,
+                    $correo
+                );
+                mysqli_query($mysqli, $sentencia_actualizar);
+
+                if ($intentos_fallidos >= 3) {
+                    $respuesta = json_encode(array('estado' => false, "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."));
+                } else {
+                    $respuesta = json_encode(array('estado' => false, "mensaje" => "Correo o contraseña incorrectos"));
+                }
+            }
+        }
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Correo o contraseña incorrectos"));
+    }
+
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
+
+
+
+
 /******************************************************************************************FUNCION ELIMINAR LOS DATOS************************************************************************************************/
 if ($post['accion'] == "eliminar") {
     $sentencia = sprintf(
