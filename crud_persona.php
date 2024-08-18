@@ -2,6 +2,24 @@
 include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
+
+/******************************************************************************************FUNCION ELIMINAR LOS DATOS************************************************************************************************/
+if ($post['accion'] == "eliminar") {
+    $sentencia = sprintf(
+        "DELETE FROM persona WHERE cod_persona='%s'",
+        mysqli_real_escape_string($mysqli, $post['codigo'])
+    );
+    $result = mysqli_query($mysqli, $sentencia);
+    if ($result) {
+        $respuesta = json_encode(array('estado' => true, "mensaje" => "Datos Eliminados Correctamente"));
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Error al Eliminar"));
+    }
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
+
 /******************************************************************************************FUNCION ACTUALIAZR LOS DATOS************************************************************************************************/
 if ($post['accion'] == "actualizar") {
     $sentencia = sprintf(
