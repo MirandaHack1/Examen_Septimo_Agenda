@@ -2,6 +2,43 @@
 include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
+/******************************************************************************************FUNCION CONSULTAR CONTACTOS POR CODIGO DE PERSONA***************************************************************************/
+if ($post['accion'] == "consultarC") {
+
+    // Verificar si el código del usuario está presente en la solicitud
+    if (isset($post['codigo_usuario'])) {
+        $codigo_usuario = mysqli_real_escape_string($mysqli, $post['codigo_usuario']);
+
+        // Consulta para obtener los contactos asociados al código del usuario
+        $sentencia = sprintf("SELECT * FROM contacto WHERE persona_cod_persona='%s'", $codigo_usuario);
+        $result = mysqli_query($mysqli, $sentencia);
+
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result)) {
+                $contactos[] = array(
+                    'cod_contacto' => $row['cod_contacto'],
+                    'nom_contacto' => $row['nom_contacto'],
+                    'ape_contacto' => $row['ape_contacto'],
+                    'telefono_contacto' => $row['telefono_contacto'],
+                    'email_contacto' => $row['email_contacto']
+                );
+            }
+            $respuesta = json_encode(array('estado' => true, "contactos" => $contactos));
+        } else {
+            $respuesta = json_encode(array('estado' => false, "mensaje" => "No hay contactos asociados a este usuario"));
+        }
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Código de usuario no proporcionado"));
+    }
+
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
+
+
+
+
 
 
 /******************************************************************************************FUNCION INICIAR SESION*************************************************************************************************/
@@ -20,7 +57,10 @@ if ($post['accion'] == "iniciarSesion") {
         $fecha_actual = date("Y-m-d H:i:s"); // Fecha actual en formato MySQL
 
         if ($intentos_fallidos >= 3 && (strtotime($fecha_actual) - strtotime($ultima_fecha)) < 3600) {
-            $respuesta = json_encode(array('estado' => false, "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."));
+            $respuesta = json_encode(array(
+                'estado' => false,
+                "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."
+            ));
         } else {
             if ($usuario['clave_persona'] === $clave) {
                 $datos = array(
@@ -37,7 +77,11 @@ if ($post['accion'] == "iniciarSesion") {
                 );
                 mysqli_query($mysqli, $sentencia_actualizar);
 
-                $respuesta = json_encode(array('estado' => true, "mensaje" => "Inicio de sesión exitoso", "usuario" => $datos));
+                $respuesta = json_encode(array(
+                    'estado' => true,
+                    "mensaje" => "Inicio de sesión exitoso",
+                    "usuario" => $datos
+                ));
             } else {
                 $intentos_fallidos++;
                 $sentencia_actualizar = sprintf(
@@ -49,18 +93,28 @@ if ($post['accion'] == "iniciarSesion") {
                 mysqli_query($mysqli, $sentencia_actualizar);
 
                 if ($intentos_fallidos >= 3) {
-                    $respuesta = json_encode(array('estado' => false, "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."));
+                    $respuesta = json_encode(array(
+                        'estado' => false,
+                        "mensaje" => "Cuenta bloqueada. Inténtelo de nuevo más tarde."
+                    ));
                 } else {
-                    $respuesta = json_encode(array('estado' => false, "mensaje" => "Correo o contraseña incorrectos"));
+                    $respuesta = json_encode(array(
+                        'estado' => false,
+                        "mensaje" => "Correo o contraseña incorrectos"
+                    ));
                 }
             }
         }
     } else {
-        $respuesta = json_encode(array('estado' => false, "mensaje" => "Correo o contraseña incorrectos"));
+        $respuesta = json_encode(array(
+            'estado' => false,
+            "mensaje" => "Correo o contraseña incorrectos"
+        ));
     }
 
     echo $respuesta;
 }
+
 /*********************************************************************************************************************************************************************************************************************/
 
 
