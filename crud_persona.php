@@ -1,6 +1,28 @@
 <?php
 include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
+
+/******************************************************************************************FUNCION ACTUALIAZR LOS DATOS************************************************************************************************/
+if ($post['accion'] == "actualizar") {
+    $sentencia = sprintf(
+        "UPDATE  persona SET ci_persona='%s', nom_persona='%s', ape_persona='%s', clave_persona='%s', correo_persona='%s'WHERE cod_persona='%s'",
+        $post['cedula'],
+        $post['nombre'],
+        $post['apellido'],
+        $post['clave'],
+        $post['correo'],
+        $post['codigo']
+    );
+    $result = mysqli_query($mysqli, $sentencia);
+    if ($result) {
+        $respuesta = json_encode(array('estado' => true, "mensaje" => "Datos Actualizados Correctamente"));
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Error al Actualizar"));
+    }
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
 /******************************************************************************************FUNCION CONSULTAR DATO DE TABLA POR CADA PERSOAN***************************************************************************/
 if ($post['accion'] == "consultarDato") {
 
@@ -66,4 +88,3 @@ if ($post['accion'] == "consultar") {
     echo $respuesta;
 }
 /*********************************************************************************************************************************************************************************************************************/
-
