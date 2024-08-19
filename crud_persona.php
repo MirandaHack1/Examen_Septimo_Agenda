@@ -4,9 +4,24 @@ $post = json_decode(file_get_contents("php://input"), true);
 
 
 
+/******************************************************************************************FUNCION ELIMINAR LOS DATOS DE CONTACTO************************************************************************************************/
+if ($post['accion'] == "eliminarC") {
+    $sentencia = sprintf(
+        "DELETE FROM contacto WHERE cod_contacto='%s'",
+        mysqli_real_escape_string($mysqli, $post['codigo'])
+    );
+    $result = mysqli_query($mysqli, $sentencia);
+    if ($result) {
+        $respuesta = json_encode(array('estado' => true, "mensaje" => "Datos Eliminados Correctamente"));
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Error al Eliminar"));
+    }
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
 
 
-/******************************************************************************************FUNCION ACTUALIAZR LOS DATOS************************************************************************************************/
+/******************************************************************************************FUNCION ACTUALIAZR LOS DATOS CONTACTO************************************************************************************************/
 if ($post['accion'] == "actualizarC") {
     $sentencia = sprintf(
         "UPDATE  contacto SET nom_contacto='%s', ape_contacto='%s', telefono_contacto='%s', email_contacto='%s', persona_cod_persona='%s'WHERE cod_contacto='%s'",
