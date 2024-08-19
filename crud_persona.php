@@ -2,7 +2,55 @@
 include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
-/******************************************************************************************FUNCION INSERTAR CONTACTO*************************************************************************************************/
+
+/******************************************************************************************FUNCION CONSULTAR DATO DE CONTACTO POR CÓDIGO***************************************************************************/
+if ($post['accion'] == "consultarDatoC") {
+
+    $sentencia = sprintf("SELECT * FROM contacto WHERE cod_contacto='%s'", $post['cod_contacto']);
+    $result = mysqli_query($mysqli, $sentencia);
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
+            $datos[] = array(
+                'cod_contacto' => $row['cod_contacto'],
+                'nom_contacto' => $row['nom_contacto'],
+                'ape_contacto' => $row['ape_contacto'],
+                'telefono_contacto' => $row['telefono_contacto'],
+                'email_contacto' => $row['email_contacto'],
+                'persona_cod_persona' => $row['persona_cod_persona']
+            );
+        }
+        $respupesta = json_encode(array('estado' => true, "contacto" => $datos));
+    } else {
+        $respupesta = json_encode(array('estado' => false, "mensaje" => "No hay datos"));
+    }
+    echo $respupesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
+/******************************************************************************************FUNCION INSERTAR O GUARDAR*************************************************************************************************/
+if ($post['accion'] == "insertar") {
+    $sentencia = sprintf(
+        "INSERT INTO persona (ci_persona, nom_persona, ape_persona, clave_persona, correo_persona) VALUES ('%s', '%s', '%s', '%s', '%s')",
+        $post['cedula'],
+        $post['nombre'],
+        $post['apellido'],
+        $post['clave'],
+        $post['correo']
+    );
+    $result = mysqli_query($mysqli, $sentencia);
+    if ($result) {
+        $respuesta = json_encode(array('estado' => true, "mensaje" => "Datos Guardados Correctamente"));
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Error al guardar"));
+    }
+    echo $respuesta;
+}
+
+/*********************************************************************************************************************************************************************************************************************/
+
+
+
+
 /******************************************************************************************FUNCION INSERTAR CONTACTO*************************************************************************************************/
 if ($post['accion'] == "insertarC") {
     // Verificar que todos los datos necesarios están presentes en la solicitud
@@ -42,7 +90,7 @@ if ($post['accion'] == "insertarC") {
 
 /*********************************************************************************************************************************************************************************************************************/
 
-/*********************************************************************************************************************************************************************************************************************/
+
 
 
 /******************************************************************************************FUNCION CONSULTAR CONTACTOS POR CODIGO DE PERSONA***************************************************************************/
@@ -63,7 +111,8 @@ if ($post['accion'] == "consultarC") {
                     'nom_contacto' => $row['nom_contacto'],
                     'ape_contacto' => $row['ape_contacto'],
                     'telefono_contacto' => $row['telefono_contacto'],
-                    'email_contacto' => $row['email_contacto']
+                    'email_contacto' => $row['email_contacto'],
+                    'persona_cod_persona' => $row['persona_cod_persona']
                 );
             }
             $respuesta = json_encode(array('estado' => true, "contactos" => $contactos));
