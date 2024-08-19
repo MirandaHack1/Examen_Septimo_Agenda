@@ -3,6 +3,31 @@ include('config.php');
 $post = json_decode(file_get_contents("php://input"), true);
 
 
+
+
+
+/******************************************************************************************FUNCION ACTUALIAZR LOS DATOS************************************************************************************************/
+if ($post['accion'] == "actualizarC") {
+    $sentencia = sprintf(
+        "UPDATE  contacto SET nom_contacto='%s', ape_contacto='%s', telefono_contacto='%s', email_contacto='%s', persona_cod_persona='%s'WHERE cod_contacto='%s'",
+        $post['text_nameC'],
+        $post['text_last_nameC'],
+        $post['text_emailC'],
+        $post['text_emailC'],
+        $post['text_codigoP'],
+        $post['text_codigoC']
+    );
+    $result = mysqli_query($mysqli, $sentencia);
+    if ($result) {
+        $respuesta = json_encode(array('estado' => true, "mensaje" => "Datos Actualizados Correctamente"));
+    } else {
+        $respuesta = json_encode(array('estado' => false, "mensaje" => "Error al Actualizar"));
+    }
+    echo $respuesta;
+}
+/*********************************************************************************************************************************************************************************************************************/
+
+
 /******************************************************************************************FUNCION CONSULTAR DATO DE CONTACTO POR CÓDIGO***************************************************************************/
 if ($post['accion'] == "consultarDatoC") {
 
